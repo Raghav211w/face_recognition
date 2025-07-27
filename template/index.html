@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- CSS Variables for Theme --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --danger-color: #DC3545;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --text-muted: #6C757D;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Base Styles --- */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* --- Main Wrapper --- */
+    .dashboard-wrapper {
+        padding: 2rem;
+        background-color: var(--background-color);
+        border-radius: var(--border-radius);
+    }
+
+    /* --- Main Card Style --- */
+    .card.main-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .main-card .card-header {
+        background-color: var(--card-background);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .main-card .card-body {
+        padding: 2rem;
+    }
+
+    /* --- Video Feed Style --- */
+    #video {
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background-color: #000;
+        /* Flip video for a natural mirror effect */
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+    }
+
+    /* --- Button Styles --- */
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+    .btn-success { background-color: var(--success-color); color: #fff; }
+    .btn-success:hover { background-color: #218838; }
+    .btn-danger { background-color: var(--danger-color); color: #fff; }
+    .btn-danger:hover { background-color: #c82333; }
+
+    /* --- Alert & Info Box Styles --- */
+    .alert {
+        border-radius: var(--border-radius);
+        border: none;
+        padding: 1rem 1.5rem;
+        text-align: left;
+    }
+    .alert-info {
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+    }
+    #student-info h5 {
+        font-weight: 700;
+    }
+    .text-warning {
+        color: #856404 !important;
+        font-weight: 600;
+    }
+    .text-success {
+        color: #155724 !important;
+        font-weight: 600;
+    }
+
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card main-card">
+                <div class="card-header text-center">
+                    <h3 class="mb-0">KIET Face Attendance System</h3>
+                </div>
+                <div class="card-body text-center">
+                    <h4>Live Face Detection & Attendance</h4>
+                    <div class="mt-4 mb-4">
+                        <video id="video" autoplay muted playsinline></video>
+                        <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+                    </div>
+                    <div id="student-info" class="alert alert-info" style="display: none; max-width: 640px; margin: 1rem auto;">
+                        <h5 class="mb-3">Student Detected:</h5>
+                        <p id="student-details"></p>
+                    </div>
+                    <button id="startDetection" class="btn btn-success btn-lg">Start Detection</button>
+                    <button id="stopDetection" class="btn btn-danger btn-lg" style="display: none;">Stop Detection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let video = document.getElementById('video');
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
+let detectionInterval;
+let isDetecting = false;
+
+// Get user media
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+    } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('Error accessing camera. Please ensure you have granted camera permissions.');
+    }
+}
+
+// Start face detection
+function startDetection() {
+    if (!isDetecting) {
+        isDetecting = true;
+        document.getElementById('startDetection').style.display = 'none';
+        document.getElementById('stopDetection').style.display = 'inline-block';
+        
+        detectionInterval = setInterval(async () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            // Send frame to server for face recognition
+            try {
+                const response = await fetch('/detect_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+                
+                const result = await response.json();
+                
+                if (result.detected) {
+                    const statusColor = result.attendance_status === 'Already marked today' ? 'text-warning' : 'text-success';
+                    document.getElementById('student-details').innerHTML = `
+                        <strong>Name:</strong> ${result.name}<br>
+                        <strong>Roll No:</strong> ${result.roll_no}<br>
+                        <strong>Department:</strong> ${result.department}<br>
+                        <strong>Year:</strong> ${result.year}<br>
+                        <strong>Confidence:</strong> ${result.confidence}%<br>
+                        <strong>Status:</strong> <span class="${statusColor}">${result.attendance_status}</span>
+                    `;
+                    document.getElementById('student-info').style.display = 'block';
+                } else {
+                    document.getElementById('student-info').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error detecting face:', error);
+            }
+        }, 1000); // Check every second
+    }
+}
+
+// Stop face detection
+function stopDetection() {
+    if (isDetecting) {
+        isDetecting = false;
+        clearInterval(detectionInterval);
+        document.getElementById('startDetection').style.display = 'inline-block';
+        document.getElementById('stopDetection').style.display = 'none';
+        document.getElementById('student-info').style.display = 'none';
+    }
+}
+
+// Event listeners
+document.getElementById('startDetection').addEventListener('click', startDetection);
+document.getElementById('stopDetection').addEventListener('click', stopDetection);
+
+// Initialize camera when page loads
+window.addEventListener('load', startCamera);
+</script>
+{% endblock %}

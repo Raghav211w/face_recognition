@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- CSS Variables for Theme --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --danger-color: #DC3545;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --text-muted: #6C757D;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Base Styles --- */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* --- Main Wrapper --- */
+    .dashboard-wrapper {
+        padding: 2rem;
+        background-color: var(--background-color);
+        border-radius: var(--border-radius);
+    }
+
+    /* --- Main Card Style --- */
+    .card.main-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .main-card .card-header {
+        background-color: var(--card-background);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .main-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* --- Form & Filter Controls --- */
+    .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.6rem 1rem !important;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 2px var(--primary-light) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* --- Button Styles --- */
+    .btn {
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-primary { background-color: var(--primary-color); color: #fff; }
+    .btn-primary:hover { background-color: #3a57d8; }
+    .btn-secondary { background-color: var(--secondary-color); color: #fff; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-success { background-color: var(--success-color); color: #fff; }
+    .btn-success:hover { background-color: #218838; }
+    .btn-info { background-color: var(--info-color); color: #fff; }
+    .btn-info:hover { background-color: #138496; }
+
+    /* --- Table Styles --- */
+    .table-responsive {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background-color: #F8F9FA;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        border-bottom: 2px solid var(--border-color);
+        padding: 1rem;
+    }
+
+    .table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--primary-light);
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .table tbody tr:first-child td {
+        border-top: none;
+    }
+
+    /* --- Status Badge --- */
+    .status-badge {
+        display: inline-block;
+        padding: 0.3em 0.6em;
+        font-size: 0.8em;
+        font-weight: 600;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.5rem;
+    }
+    
+    .status-badge.present {
+        color: #155724;
+        background-color: #d4edda;
+    }
+
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card main-card">
+                <div class="card-header">
+                    <h3 class="mb-0">Attendance Records</h3>
+                </div>
+                <div class="card-body">
+                    <div class="filter-controls">
+                        <input type="date" class="form-control" id="dateFilter" placeholder="Filter by date" style="flex: 1;">
+                        <select class="form-control" id="departmentFilter" style="flex: 1;">
+                            <option value="">All Departments</option>
+                            <option value="CSE">CSE</option>
+                            <option value="ECE">ECE</option>
+                            <option value="ME">ME</option>
+                            <option value="EEE">EEE</option>
+                        </select>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-primary" onclick="filterAttendance()">Filter</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetFilter()">Reset</button>
+                            <button type="button" class="btn btn-success" onclick="exportToExcel()">Export</button>
+                            <a href="/view_database" class="btn btn-info">View Database</a>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Name</th>
+                                    <th>Roll No</th>
+                                    <th>Department</th>
+                                    <th>Year</th>
+                                    <th>Confidence</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody">
+                                <!-- JS will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="noRecords" class="alert alert-light text-center mt-3" style="display: none;">
+                        <h5>No attendance records found</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load attendance records
+async function loadAttendance() {
+    try {
+        const response = await fetch('/get_attendance');
+        const attendance = await response.json();
+        
+        const tbody = document.getElementById('attendanceTableBody');
+        tbody.innerHTML = '';
+        
+        if (attendance.length === 0) {
+            document.getElementById('noRecords').style.display = 'block';
+            return;
+        }
+        
+        document.getElementById('noRecords').style.display = 'none';
+        
+        attendance.forEach(record => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${record.date}</td>
+                <td>${record.time}</td>
+                <td>${record.name}</td>
+                <td>${record.roll_no}</td>
+                <td>${record.department}</td>
+                <td>${record.year}</td>
+                <td>${record.confidence}%</td>
+                <td><span class="status-badge present">Present</span></td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error loading attendance:', error);
+    }
+}
+
+// Filter attendance
+async function filterAttendance() {
+    const date = document.getElementById('dateFilter').value;
+    const department = document.getElementById('departmentFilter').value;
+    
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (department) params.append('department', department);
+    
+    try {
+        const response = await fetch(`/get_attendance?${params}`);
+        const attendance = await response.json();
+        
+        const tbody = document.getElementById('attendanceTableBody');
+        tbody.innerHTML = '';
+        
+        if (attendance.length === 0) {
+            document.getElementById('noRecords').style.display = 'block';
+            return;
+        }
+        
+        document.getElementById('noRecords').style.display = 'none';
+        
+        attendance.forEach(record => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${record.date}</td>
+                <td>${record.time}</td>
+                <td>${record.name}</td>
+                <td>${record.roll_no}</td>
+                <td>${record.department}</td>
+                <td>${record.year}</td>
+                <td>${record.confidence}%</td>
+                <td><span class="status-badge present">Present</span></td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error filtering attendance:', error);
+    }
+}
+
+// Reset filter
+function resetFilter() {
+    document.getElementById('dateFilter').value = '';
+    document.getElementById('departmentFilter').value = '';
+    loadAttendance();
+}
+
+// Export to Excel
+function exportToExcel() {
+    const date = document.getElementById('dateFilter').value;
+    const department = document.getElementById('departmentFilter').value;
+    
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (department) params.append('department', department);
+    
+    const url = `/export_attendance_excel?${params}`;
+    
+    // Create a temporary link and click it to download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Initialize
+window.addEventListener('load', loadAttendance);
+</script>
+{% endblock %}

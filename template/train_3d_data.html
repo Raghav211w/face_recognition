@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- CSS Variables for Theme --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --danger-color: #DC3545;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --text-muted: #6C757D;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Base Styles --- */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* --- Main Wrapper --- */
+    .dashboard-wrapper {
+        padding: 2rem;
+        background-color: var(--background-color);
+        border-radius: var(--border-radius);
+    }
+
+    /* --- Main Card Style --- */
+    .card.main-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .main-card .card-header {
+        background-color: var(--card-background);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .main-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* --- Form & Input Styles --- */
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .form-select, .form-control {
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.6rem 1rem !important;
+    }
+    .form-select:focus, .form-control:focus {
+        box-shadow: 0 0 0 2px var(--primary-light) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* --- Button Styles --- */
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    .btn-primary { background-color: var(--primary-color); color: #fff; }
+    .btn-primary:hover { background-color: #3a57d8; }
+    .btn-success { background-color: var(--success-color); color: #fff; }
+    .btn-success:hover { background-color: #218838; }
+    .btn-secondary { background-color: var(--secondary-color); color: #fff; }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    /* --- Video & Canvas --- */
+    #video {
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+        background-color: #000;
+        width: 100%;
+    }
+
+    /* --- Pose & Status Indicators --- */
+    .pose-instructions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    .pose-instruction {
+        background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        text-align: center;
+        flex: 1;
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+    .pose-instruction.active {
+        background-color: var(--primary-light);
+        border-color: var(--primary-color);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+    .pose-instruction.completed {
+        background-color: #d4edda;
+        border-color: var(--success-color);
+        opacity: 0.7;
+    }
+    .pose-instruction i {
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-indicator {
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+    .status-ready { background-color: #e9ecef; color: var(--text-muted); }
+    .status-capturing { background-color: var(--primary-light); color: var(--primary-color); }
+    .status-processing { background-color: #fff3cd; color: #856404; }
+    .status-complete { background-color: #d4edda; color: #155724; }
+
+    .progress {
+        height: 1rem;
+        border-radius: var(--border-radius);
+    }
+    
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="card main-card">
+        <div class="card-header">
+            <h3 class="mb-0"><i class="fas fa-cube me-2"></i>3D Face Training System</h3>
+        </div>
+        <div class="card-body">
+            <!-- Student Selection -->
+            <div class="row mb-4 align-items-end">
+                <div class="col-md-6">
+                    <label for="studentSelect" class="form-label">Select Student</label>
+                    <select class="form-select" id="studentSelect">
+                        <option value="">Choose a student...</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-primary w-100" id="startTrainingBtn" disabled>
+                        <i class="fas fa-play me-2"></i>Start 3D Training
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-7">
+                     <!-- Video Feed -->
+                    <div class="video-container mb-3">
+                        <video id="video" autoplay muted playsinline></video>
+                        <canvas id="canvas" style="display:none;"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <!-- Training Status -->
+                    <div class="training-status text-center mb-3">
+                        <div id="statusIndicator" class="status-indicator status-ready">Ready to Start</div>
+                        <div class="mt-2">
+                            <strong>Frames Captured: <span id="frameCount">0</span> / 10</strong>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-container mb-4">
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Instructions -->
+                    <div class="instructions">
+                        <h5 class="mb-3">Follow Poses</h5>
+                        <div class="pose-instructions">
+                            <div class="pose-instruction" data-pose="front"><i class="fas fa-user fa-2x"></i><div>Straight</div></div>
+                            <div class="pose-instruction" data-pose="left"><i class="fas fa-arrow-left fa-2x"></i><div>Left</div></div>
+                            <div class="pose-instruction" data-pose="right"><i class="fas fa-arrow-right fa-2x"></i><div>Right</div></div>
+                            <div class="pose-instruction" data-pose="up"><i class="fas fa-arrow-up fa-2x"></i><div>Up</div></div>
+                            <div class="pose-instruction" data-pose="down"><i class="fas fa-arrow-down fa-2x"></i><div>Down</div></div>
+                        </div>
+                    </div>
+                    
+                     <!-- Control Buttons -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-primary" id="captureFrameBtn" disabled>
+                            <i class="fas fa-camera me-2"></i>Capture Frame Manually
+                        </button>
+                        <button class="btn btn-success" id="generate3DBtn" disabled>
+                            <i class="fas fa-check-circle me-2"></i>Generate 3D Model
+                        </button>
+                        <button class="btn btn-secondary" id="resetBtn">
+                            <i class="fas fa-redo me-2"></i>Reset Training
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="mt-4" style="display: none;">
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-check-circle me-2"></i>3D Model Generated Successfully!</h5>
+                    <div id="modelStats"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Your existing script remains unchanged ---
+    let video, canvas, ctx;
+    let selectedStudentId = null;
+    let trainingActive = false;
+    let framesCaptured = 0;
+    let currentPose = 'front';
+    
+    const poses = ['front', 'left', 'right', 'up', 'down'];
+    const minFrames = 10;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvas');
+        ctx = canvas.getContext('2d');
+        
+        loadStudents();
+        initializeCamera();
+        setupEventListeners();
+        updateUI(); // Initial UI state
+    });
+    
+    function loadStudents() {
+        fetch('/get_students')
+            .then(response => response.json())
+            .then(students => {
+                const select = document.getElementById('studentSelect');
+                select.innerHTML = '<option value="">Choose a student...</option>';
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.name} (${student.roll_no}) - ${student.department}`;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error loading students:', error));
+    }
+    
+    function initializeCamera() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(error => console.error('Error accessing camera:', error));
+        }
+    }
+    
+    function setupEventListeners() {
+        document.getElementById('studentSelect').addEventListener('change', function() {
+            selectedStudentId = this.value;
+            updateUI();
+        });
+        
+        document.getElementById('startTrainingBtn').addEventListener('click', startTraining);
+        document.getElementById('captureFrameBtn').addEventListener('click', captureFrame);
+        document.getElementById('generate3DBtn').addEventListener('click', generate3DModel);
+        document.getElementById('resetBtn').addEventListener('click', resetTraining);
+    }
+    
+    function startTraining() {
+        if (!selectedStudentId) return;
+        
+        fetch('/start_3d_training', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ student_id: selectedStudentId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                trainingActive = true;
+                updateUI();
+                updateStatus('capturing', 'Ready for Capture');
+            }
+        });
+    }
+    
+    function captureFrame() {
+        if (!trainingActive) return;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        
+        fetch('/capture_3d_frame', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ student_id: selectedStudentId, image: imageData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                framesCaptured = data.frames_captured;
+                updateProgress();
+                if (framesCaptured % 2 === 0 && framesCaptured < 10) {
+                    advancePose();
+                }
+            }
+        });
+    }
+    
+    function generate3DModel() {
+        if (framesCaptured < minFrames) return;
+        
+        updateStatus('processing', 'Generating 3D Model...');
+        
+        fetch('/generate_3d_model', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ student_id: selectedStudentId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateStatus('complete', '3D Model Generated!');
+                showResults(data);
+            } else {
+                updateStatus('ready', 'Generation Failed');
+            }
+        });
+    }
+    
+    function resetTraining() {
+        trainingActive = false;
+        framesCaptured = 0;
+        currentPose = 'front';
+        selectedStudentId = null;
+        
+        document.getElementById('studentSelect').selectedIndex = 0;
+        document.getElementById('results').style.display = 'none';
+        
+        document.querySelectorAll('.pose-instruction').forEach(el => el.classList.remove('active', 'completed'));
+        document.querySelector('.pose-instruction[data-pose="front"]').classList.add('active');
+        
+        updateUI();
+        updateProgress();
+        updateStatus('ready', 'Ready to Start');
+    }
+    
+    function updateUI() {
+        const studentSelected = !!selectedStudentId;
+        document.getElementById('startTrainingBtn').disabled = !studentSelected || trainingActive;
+        document.getElementById('captureFrameBtn').disabled = !trainingActive;
+        document.getElementById('generate3DBtn').disabled = framesCaptured < minFrames;
+        if (trainingActive) {
+             document.querySelector('.pose-instruction[data-pose="front"]').classList.add('active');
+        }
+    }
+    
+    function updateProgress() {
+        const progress = Math.min((framesCaptured / minFrames) * 100, 100);
+        document.getElementById('progressBar').style.width = `${progress}%`;
+        document.getElementById('frameCount').textContent = `${framesCaptured}`;
+        updateUI();
+    }
+    
+    function updateStatus(type, message) {
+        const indicator = document.getElementById('statusIndicator');
+        indicator.className = `status-indicator status-${type}`;
+        indicator.textContent = message;
+    }
+    
+    function advancePose() {
+        const currentIndex = poses.indexOf(currentPose);
+        const nextIndex = (currentIndex + 1) % poses.length;
+        
+        document.querySelector(`.pose-instruction[data-pose="${currentPose}"]`).classList.remove('active');
+        document.querySelector(`.pose-instruction[data-pose="${currentPose}"]`).classList.add('completed');
+        
+        currentPose = poses[nextIndex];
+        document.querySelector(`.pose-instruction[data-pose="${currentPose}"]`).classList.add('active');
+    }
+    
+    function showResults(data) {
+        const results = document.getElementById('results');
+        const stats = document.getElementById('modelStats');
+        stats.innerHTML = `
+            <p><strong>Model Path:</strong> ${data.model_path}</p>
+            <p><strong>Vertices:</strong> ${data.vertices_count}</p>
+            <p><strong>Triangles:</strong> ${data.triangles_count}</p>
+        `;
+        results.style.display = 'block';
+    }
+
+    setInterval(() => {
+        if (trainingActive && framesCaptured < minFrames) {
+            captureFrame();
+        }
+    }, 2000);
+</script>
+{% endblock %}

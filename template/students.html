@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- CSS Variables for Theme --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --danger-color: #DC3545;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --text-muted: #6C757D;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Base Styles --- */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* --- Main Wrapper --- */
+    .dashboard-wrapper {
+        padding: 2rem;
+        background-color: var(--background-color);
+        border-radius: var(--border-radius);
+    }
+
+    /* --- Main Card Style --- */
+    .card.main-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .main-card .card-header {
+        background-color: var(--card-background);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .main-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* --- Statistics Cards --- */
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .stat-box {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        text-align: center;
+        flex: 1;
+        min-width: 200px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    .stat-label {
+        font-size: 0.9rem;
+        margin-top: 5px;
+        opacity: 0.9;
+    }
+
+    /* --- Search and Filter --- */
+    .filter-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .form-control {
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.6rem 1rem !important;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 2px var(--primary-light) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* --- Table Styles --- */
+    .table-responsive {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+    }
+    .table { margin-bottom: 0; }
+    .table thead th {
+        background-color: #F8F9FA;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        border-bottom: 2px solid var(--border-color);
+        padding: 1rem;
+    }
+    .table tbody tr:hover { background-color: var(--primary-light); }
+    .table tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--border-color);
+    }
+    .table tbody tr:first-child td { border-top: none; }
+
+    /* --- Button Styles --- */
+    .btn {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    .btn-danger { background-color: var(--danger-color); color: #fff; }
+    .btn-danger:hover { background-color: #c82333; }
+
+    /* --- Alert Styles --- */
+    .alert {
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: var(--border-radius);
+    }
+    .alert-success {
+        color: #0f5132;
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+    }
+    .alert-danger {
+        color: #842029;
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="card main-card">
+        <div class="card-header">
+            <h3 class="mb-0">Student Management</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success" id="successAlert" style="display: none;"></div>
+            <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number" id="totalStudents">0</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-box" style="background-color: var(--success-color);">
+                    <div class="stat-number" id="studentsWithAttendance">0</div>
+                    <div class="stat-label">Students with Attendance</div>
+                </div>
+                <div class="stat-box" style="background-color: var(--info-color);">
+                    <div class="stat-number" id="totalAttendanceRecords">0</div>
+                    <div class="stat-label">Total Attendance Records</div>
+                </div>
+            </div>
+
+            <div class="filter-container">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or roll number..." style="flex: 2;">
+                <select id="departmentFilter" class="form-control" style="flex: 1;">
+                    <option value="">All Departments</option>
+                    <option value="CSE">CSE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="ME">ME</option>
+                    <option value="Civil">Civil</option>
+                    <option value="AI/ML">AI/ML</option>
+                    <option value="IT">IT</option>
+                    <option value="ECE">ECE</option>
+                </select>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table" id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Name</th>
+                            <th>Roll No</th>
+                            <th>Department</th>
+                            <th>Year</th>
+                            <th>Library ID</th>
+                            <th>Total Attendance</th>
+                            <th>Last Attendance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Your existing script remains unchanged as it works with the new structure
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadStudents();
+    updateStats();
+
+    document.getElementById('searchInput').addEventListener('input', filterTable);
+    document.getElementById('departmentFilter').addEventListener('change', filterTable);
+});
+
+async function loadStudents() {
+    try {
+        const response = await fetch('/get_students');
+        const students = await response.json();
+        const tbody = document.getElementById('studentsTableBody');
+        tbody.innerHTML = '';
+
+        students.forEach((student, index) => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', student.id);
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${student.name}</td>
+                <td>${student.roll_no}</td>
+                <td>${student.department}</td>
+                <td>${student.year}</td>
+                <td>${student.library_id}</td>
+                <td>${student.total_attendance}</td>
+                <td>${student.last_attendance || 'Never'}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteStudent(${student.id}, '${student.name}', '${student.roll_no}')">
+                        Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Failed to load students:', error);
+        showAlert('danger', 'Failed to load student data.');
+    }
+}
+
+function filterTable() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const departmentFilter = document.getElementById('departmentFilter').value;
+    const table = document.getElementById('studentsTable');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = tbody.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const cells = row.cells;
+        if (cells.length >= 4) {
+            const name = cells[1].textContent.toLowerCase();
+            const rollNo = cells[2].textContent.toLowerCase();
+            const department = cells[3].textContent;
+
+            const matchesSearch = name.includes(searchInput) || rollNo.includes(searchInput);
+            const matchesDepartment = departmentFilter === '' || department === departmentFilter;
+
+            row.style.display = (matchesSearch && matchesDepartment) ? '' : 'none';
+        }
+    });
+}
+
+function deleteStudent(studentId, studentName, rollNo) {
+    if (confirm(`Are you sure you want to delete student "${studentName}" (Roll No: ${rollNo})?\n\nThis will permanently remove:\n- Student profile\n- All attendance records\n- Training images\n\nThis action cannot be undone.`)) {
+        deleteStudentRequest(studentId, studentName, rollNo);
+    }
+}
+
+async function deleteStudentRequest(studentId, studentName, rollNo) {
+    try {
+        const response = await fetch(`/delete_student/${studentId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+            const rowToDelete = document.querySelector(`tr[data-id="${studentId}"]`);
+            if (rowToDelete) rowToDelete.remove();
+            showAlert('success', `Student "${studentName}" has been successfully deleted.`);
+            updateStats(); // Recalculate stats after deletion
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete student');
+        }
+    } catch (error) {
+        showAlert('danger', error.message);
+    }
+}
+
+function showAlert(type, message) {
+    const alertId = type === 'success' ? 'successAlert' : 'errorAlert';
+    const alertElement = document.getElementById(alertId);
+    if (alertElement) {
+        alertElement.textContent = message;
+        alertElement.style.display = 'block';
+        setTimeout(() => {
+            alertElement.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function updateStats() {
+    const tbody = document.getElementById('studentsTableBody');
+    if (!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr');
+    const totalStudents = rows.length;
+    let studentsWithAttendance = 0;
+    let totalAttendanceRecords = 0;
+    
+    rows.forEach(row => {
+        const cells = row.cells;
+        if (cells.length >= 7) {
+            const attendanceCount = parseInt(cells[6].textContent) || 0;
+            if (attendanceCount > 0) {
+                studentsWithAttendance++;
+            }
+            totalAttendanceRecords += attendanceCount;
+        }
+    });
+    
+    document.getElementById('totalStudents').textContent = totalStudents;
+    document.getElementById('studentsWithAttendance').textContent = studentsWithAttendance;
+    document.getElementById('totalAttendanceRecords').textContent = totalAttendanceRecords;
+}
+</script>
+{% endblock %}

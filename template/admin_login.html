@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- CSS Variables for Theme --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Base Styles --- */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* --- Main Wrapper --- */
+    .dashboard-wrapper {
+        padding-top: 4rem; /* Add more space at the top for a login screen */
+        padding-bottom: 4rem;
+        background-color: var(--background-color);
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* --- Login Card Style --- */
+    .card.login-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        width: 100%;
+        max-width: 450px; /* Constrain width for a better look */
+    }
+
+    .login-card .card-header {
+        background-color: var(--primary-color);
+        color: #fff;
+        border-bottom: none;
+        padding: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .login-card .card-body {
+        padding: 2rem;
+    }
+
+    /* --- Form & Input Styles --- */
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.75rem 1rem !important;
+        transition: all 0.2s ease;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 3px var(--primary-light) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    /* --- Button Styles --- */
+    .btn-primary {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border: none;
+        background-color: var(--primary-color);
+        color: #fff;
+    }
+    .btn-primary:hover {
+        background-color: #3a57d8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="card login-card">
+        <div class="card-header">
+            <h3 class="mb-0">Admin Login</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="/admin_dashboard">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

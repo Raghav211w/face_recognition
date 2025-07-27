@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- CSS Variables for Theme --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --info-color: #17a2b8;
+        --danger-color: #DC3545;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --text-muted: #6C757D;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Base Styles --- */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* --- Main Wrapper --- */
+    .dashboard-wrapper {
+        padding: 2rem;
+        background-color: var(--background-color);
+        border-radius: var(--border-radius);
+    }
+
+    /* --- Main Card Style --- */
+    .card.main-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .main-card .card-header {
+        background-color: var(--card-background);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .main-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* --- Form & Input Styles --- */
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .form-select, .form-control {
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.6rem 1rem !important;
+        transition: all 0.2s ease;
+    }
+    .form-select:focus, .form-control:focus {
+        box-shadow: 0 0 0 2px var(--primary-light) !important;
+        border-color: var(--primary-color) !important;
+    }
+    .form-control[readonly] {
+        background-color: #e9ecef;
+        opacity: 1;
+    }
+
+    /* --- Button Styles --- */
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border: none;
+        margin-right: 0.5rem;
+    }
+    .btn-primary { background-color: var(--primary-color); color: #fff; }
+    .btn-primary:hover { background-color: #3a57d8; }
+    .btn-secondary { background-color: var(--secondary-color); color: #fff; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    .btn-success { background-color: var(--success-color); color: #fff; }
+    .btn-success:hover { background-color: #218838; }
+    .btn-warning { background-color: var(--warning-color); color: #212529; }
+    .btn-warning:hover { background-color: #e0a800; }
+
+    /* --- Alert Styles --- */
+    .alert {
+        border-radius: var(--border-radius);
+        border: none;
+        padding: 1rem 1.5rem;
+    }
+    .alert-danger {
+        color: #842029;
+        background-color: #f8d7da;
+    }
+    .alert-success {
+        color: #0f5132;
+        background-color: #d1e7dd;
+    }
+
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card main-card">
+                <div class="card-header">
+                    <h3 class="mb-0">Update Existing Student Profile</h3>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                    
+                    {% if not student %}
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="roll_no" class="form-label">Enter Roll Number to Find Student</label>
+                                <input type="text" class="form-control" id="roll_no" name="roll_no" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Find Student</button>
+                            <a href="/admin_dashboard" class="btn btn-secondary">Cancel</a>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-success" role="alert">
+                            Student found! You can now update the details below.
+                        </div>
+                        <form method="POST">
+                            <input type="hidden" name="roll_no" value="{{ student.roll_no }}">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ student.name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="roll_no_display" class="form-label">Roll Number</label>
+                                <input type="text" class="form-control" id="roll_no_display" value="{{ student.roll_no }}" readonly>
+                                <small class="form-text text-muted">Roll number cannot be changed.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department" name="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science Engineering" {% if student.department == 'Computer Science Engineering' %}selected{% endif %}>Computer Science Engineering (CSE)</option>
+                                    <option value="Electrical & Electronics Engineering" {% if student.department == 'Electrical & Electronics Engineering' %}selected{% endif %}>Electrical & Electronics Engineering (EEE)</option>
+                                    <option value="Electronics & Communication Engineering" {% if student.department == 'Electronics & Communication Engineering' %}selected{% endif %}>Electronics & Communication Engineering (ECE)</option>
+                                    <option value="Mechanical Engineering" {% if student.department == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering (ME)</option>
+                                    <option value="Civil Engineering" {% if student.department == 'Civil Engineering' %}selected{% endif %}>Civil Engineering (CE)</option>
+                                    <option value="Artificial Intelligence & Machine Learning" {% if student.department == 'Artificial Intelligence & Machine Learning' %}selected{% endif %}>Artificial Intelligence & Machine Learning (AI&ML)</option>
+                                    <option value="Information Technology" {% if student.department == 'Information Technology' %}selected{% endif %}>Information Technology (IT)</option>
+                                    <option value="Chemical Engineering" {% if student.department == 'Chemical Engineering' %}selected{% endif %}>Chemical Engineering (CHE)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="year" class="form-label">Year</label>
+                                <input type="number" class="form-control" id="year" name="year" value="{{ student.year }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="library_id" class="form-label">Library ID</label>
+                                <input type="text" class="form-control" id="library_id" name="library_id" value="{{ student.library_id }}" required>
+                            </div>
+                            <button type="submit" name="update" value="true" class="btn btn-success">Update Profile</button>
+                            <a href="/admin_dashboard" class="btn btn-secondary">Cancel</a>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- Import Google Font --- */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    /* --- Define CSS Variables for easy theme management --- */
+    :root {
+        --primary-color: #4A6CFA;
+        --primary-light: #E9EFFF;
+        --secondary-color: #6C757D;
+        --danger-color: #DC3545;
+        --background-color: #F8F9FA;
+        --card-background: #FFFFFF;
+        --text-color: #212529;
+        --text-muted: #6C757D;
+        --border-color: #DEE2E6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    /* --- Apply base styles to the body --- */
+    /* This will be overridden by your base.html, but is good for standalone viewing */
+    body {
+        background-color: var(--background-color);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-color);
+    }
+
+    /* --- Main dashboard wrapper for spacing --- */
+    .dashboard-wrapper {
+        padding: 2rem;
+        /* Use the light background for this specific section */
+        background-color: var(--background-color); 
+        border-radius: var(--border-radius);
+    }
+
+    /* --- Style the main container card --- */
+    .card.main-card {
+        background-color: var(--card-background);
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden; /* Ensures child elements conform to border radius */
+    }
+
+    .main-card .card-header {
+        background-color: var(--card-background);
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+
+    /* --- Style the smaller action cards --- */
+    .action-card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+        border-color: var(--primary-color);
+    }
+
+    .action-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .action-card .card-title {
+        font-weight: 600;
+        margin-top: 1rem;
+        color: var(--text-color);
+    }
+
+    .action-card .card-text {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        min-height: 40px; /* Ensures alignment */
+    }
+
+    /* --- Icon Styles --- */
+    .icon-container {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        height: 40px;
+    }
+
+    /* --- Button Overrides --- */
+    .btn {
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background-color: #3a57d8;
+    }
+
+    .btn-secondary {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+        background-color: #d8e0ff;
+    }
+
+    .btn-danger {
+        background-color: var(--danger-color);
+        color: #fff;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card main-card">
+                <div class="card-header">
+                    <h3 class="mb-0">Admin Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <!-- Student Management Card -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 action-card">
+                                <div class="card-body">
+                                    <div class="icon-container"><i class="fas fa-users-cog"></i></div>
+                                    <h5 class="card-title">Student Management</h5>
+                                    <p class="card-text">Manage student records</p>
+                                    <a href="/add_student" class="btn btn-primary mb-2">Add New Profile</a>
+                                    <a href="/update_student" class="btn btn-secondary mb-2">Update Profile</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Train Data Card -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 action-card">
+                                <div class="card-body">
+                                    <div class="icon-container"><i class="fas fa-brain"></i></div>
+                                    <h5 class="card-title">Train Data</h5>
+                                    <p class="card-text">Train face recognition model</p>
+                                    <a href="/train_data" class="btn btn-primary mb-2">2D Training</a>
+                                    <a href="/train_3d_data" class="btn btn-secondary">3D Training</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- View Students Card -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 action-card">
+                                <div class="card-body">
+                                    <div class="icon-container"><i class="fas fa-list-alt"></i></div>
+                                    <h5 class="card-title">Student Records</h5>
+                                    <p class="card-text">View all student profiles</p>
+                                    <a href="/students" class="btn btn-primary">View All Students</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Check Attendance Card -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 action-card">
+                                <div class="card-body">
+                                    <div class="icon-container"><i class="fas fa-calendar-check"></i></div>
+                                    <h5 class="card-title">Check Attendance</h5>
+                                    <p class="card-text">View attendance records</p>
+                                    <a href="/check_attendance" class="btn btn-primary">View Attendance</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Logout Card -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 action-card">
+                                <div class="card-body">
+                                    <div class="icon-container"><i class="fas fa-sign-out-alt"></i></div>
+                                    <h5 class="card-title">Logout</h5>
+                                    <p class="card-text">End admin session</p>
+                                    <a href="/" class="btn btn-danger">Logout</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
