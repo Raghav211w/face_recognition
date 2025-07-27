@@ -13,12 +13,6 @@ A comprehensive web-based face recognition attendance system designed for KIET c
 
 ## Setup Instructions
 
-### Prerequisites
-
-- Python 3.7+
-- Webcam access
-- Modern web browser with camera permissions
-
 ### Installation
 
 1. Clone or download the project:
