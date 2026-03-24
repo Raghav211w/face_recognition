@@ -1,4 +1,4 @@
-# KIET Face Attendance System
+# Face Attendance System
 
 A comprehensive web-based face recognition attendance system designed for KIET college.
 
